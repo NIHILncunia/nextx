@@ -3,6 +3,8 @@ import path from 'path';
 import fs from 'fs-extra';
 import ejs from 'ejs';
 
+import { generateIntermediatePaths } from '../utils.js';
+
 // Helper function to create the route.ts file
 async function createApiRouteFile(category: string, apiPath: string) {
   const outputDir = path.resolve(process.cwd(), 'app', 'api', category, apiPath);
@@ -47,17 +49,7 @@ export const apiCommand = new Command()
 
       if (options.all) {
         console.log('\nℹ️ --all 옵션 감지. 모든 상위 경로에 API 라우트를 생성합니다.');
-        const intermediatePaths = new Set<string>();
-
-        for (const apiPath of paths) {
-          intermediatePaths.add(''); // Add category root
-          const pathSegments = apiPath.split('/').filter((p: string) => p);
-          let currentPath = '';
-          for (let i = 0; i < pathSegments.length - 1; i++) {
-            currentPath = path.join(currentPath, pathSegments[i]);
-            intermediatePaths.add(currentPath);
-          }
-        }
+        const intermediatePaths = generateIntermediatePaths(paths);
 
         for (const intermediatePath of intermediatePaths) {
           if (!createdPaths.has(intermediatePath)) {

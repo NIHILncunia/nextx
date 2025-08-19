@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import path from 'path';
 import fs from 'fs-extra';
 import ejs from 'ejs';
-import { kebabToPascalCase } from '../utils.js';
+import { kebabToPascalCase, generateIntermediatePaths } from '../utils.js';
 
 async function createPageFiles(group: string, routePath: string) {
   const isGroupRoot = routePath === '';
@@ -81,17 +81,7 @@ export const pageCommand = new Command()
 
       if (options.all) {
         console.log('ℹ️ --all 옵션 감지. 모든 상위 경로에 페이지를 생성합니다.');
-        const intermediatePaths = new Set<string>();
-
-        for (const routePath of paths) {
-          intermediatePaths.add(''); // Add group root
-          const pathSegments = routePath.split('/').filter((p: string) => p);
-          let currentPath = '';
-          for (let i = 0; i < pathSegments.length - 1; i++) {
-            currentPath = path.join(currentPath, pathSegments[i]);
-            intermediatePaths.add(currentPath);
-          }
-        }
+        const intermediatePaths = generateIntermediatePaths(paths);
 
         for (const intermediatePath of intermediatePaths) {
           if (!createdPaths.has(intermediatePath)) {
