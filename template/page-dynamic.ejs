@@ -1,0 +1,25 @@
+import React from 'react';
+import type { Metadata, ResolvingMetadata } from 'next';
+
+import { <%- pascalCaseName %> } from '@/app/(<%- group %>)/<%- routePath %>/_components/<%- pascalCaseName %>';
+import { setMeta } from '@/_libs';
+
+interface Props {
+  params: Promise<{ <%- dynamicParam %>: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export async function generateMetadata(
+  { params }: Props,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const { <%- dynamicParam %> } = await params;
+  return setMeta({
+    title: '', // TODO: Add title based on params
+    url: `/<%- routePath %>`,
+  });
+}
+
+export default function <%- pascalCaseName %>Page({ params }: Props) {
+  return <<%- pascalCaseName %> {...params} />;
+}

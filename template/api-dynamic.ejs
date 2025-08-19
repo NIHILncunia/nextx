@@ -1,0 +1,15 @@
+import type { NextRequest, NextResponse } from 'next/server';
+
+interface Props {
+  params: Promise<{ <%- dynamicParam %>: string }>;
+}
+
+export async function GET(request: NextRequest, { params }: Props) {}
+
+export async function POST(request: NextRequest, { params }: Props) {}
+
+export async function PUT(request: NextRequest, { params }: Props) {}
+
+export async function PATCH(request: NextRequest, { params }: Props) {}
+
+export async function DELETE(request: NextRequest, { params }: Props) {}

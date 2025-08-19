@@ -1,0 +1,41 @@
+{
+  "name": "@nihilncunia/nextx",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "CLI for scaffolding Next.js app router projects",
+  "main": "dist/index.js",
+  "bin": {
+    "nextx": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "template"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js"
+  },
+  "keywords": [
+    "next.js",
+    "cli",
+    "scaffold",
+    "generator"
+  ],
+  "author": "NIHILncunia",
+  "license": "MIT",
+  "packageManager": "pnpm@10.14.0",
+  "dependencies": {
+    "commander": "^14.0.0",
+    "ejs": "^3.1.10",
+    "fs-extra": "^11.3.1"
+  },
+  "devDependencies": {
+    "@types/ejs": "^3.1.5",
+    "@types/fs-extra": "^11.0.4",
+    "@types/glob": "^9.0.0",
+    "@types/node": "^24.3.0",
+    "glob": "^11.0.3",
+    "typescript": "^5.9.2"
+  }
+}

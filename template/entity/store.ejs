@@ -1,0 +1,32 @@
+import { create, type StateCreator } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { immer } from 'zustand/middleware/immer';
+
+interface <%- pascalCaseName %>Actions {
+  // Add actions here
+}
+
+interface <%- pascalCaseName %>State {
+  // Add state here
+  actions: <%- pascalCaseName %>Actions;
+}
+
+const create<%- pascalCaseName %>Slice: StateCreator<
+  <%- pascalCaseName %>State,
+  [['zustand/immer', never]]
+> = (set) => ({
+  // Initial state
+  actions: {
+    // Add action implementations here
+  },
+});
+
+const use<%- pascalCaseName %>Store = create<<%- pascalCaseName %>State>()(
+  persist(immer(create<%- pascalCaseName %>Slice), {
+    name: '<%- entityName %>-storage',
+    storage: createJSONStorage(() => localStorage),
+    // partialize: (state) => ({ ... }), // Choose what to persist
+  })
+);
+
+export const use<%- pascalCaseName %>Actions = () => use<%- pascalCaseName %>Store((state) => state.actions);
