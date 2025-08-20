@@ -24,16 +24,20 @@
   ],
   "author": "NIHILncunia",
   "license": "MIT",
-  "packageManager": "pnpm@10.14.0",
+  "packageManager": "pnpm@10.15.0",
   "dependencies": {
     "commander": "^14.0.0",
     "ejs": "^3.1.10",
-    "fs-extra": "^11.3.1"
+    "find-up": "^7.0.0",
+    "fs-extra": "^11.3.1",
+    "jiti": "^2.5.1",
+    "js-yaml": "^4.1.0"
   },
   "devDependencies": {
     "@types/ejs": "^3.1.5",
     "@types/fs-extra": "^11.0.4",
     "@types/glob": "^9.0.0",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.3.0",
     "glob": "^11.0.3",
     "typescript": "^5.9.2"

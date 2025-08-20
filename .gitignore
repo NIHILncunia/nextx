@@ -25,4 +25,5 @@ Thumbs.db
 # Packed file
 *.tgz
 
-docs/
+# Test workspaces
+e2e-test-workspace/

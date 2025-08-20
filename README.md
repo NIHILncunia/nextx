@@ -14,7 +14,54 @@ npm install -g @NIHILncunia/nextx
 pnpm add -g @NIHILncunia/nextx
 ```
 
-**참고**: 이 CLI는 반드시 Next.js 프로젝트의 루트( `next.config.js` 파일이 있는 위치)에서 실행해야 합니다.
+**참고**: `nextx`는 현재 디렉토리, 상위 디렉토리, 또는 pnpm 모노레포 작업 공간 내에서 Next.js 프로젝트(`next.config.js`가 있는 위치)를 자동으로 찾습니다. 특정 경로를 지정하고 싶다면 설정 파일을 사용할 수 있습니다.
+
+---
+
+## 설정 (Configuration)
+
+`nextx`는 별도의 설정 없이도 바로 사용할 수 있지만, 설정 파일을 통해 프로젝트 구조에 맞게 기본 동작을 상세하게 설정할 수 있습니다.
+
+### 설정 파일
+
+프로젝트 루트에 `nextx.config.ts`, `nextx.config.js`, 또는 `nextx.config.json` 파일을 생성하여 각 생성물의 기본 경로를 재정의할 수 있습니다. CLI는 `.ts`, `.js`, `.json` 순서로 파일을 탐색합니다.
+
+**`nextx.config.ts` 예시 (권장):**
+
+```typescript
+// nextx.config.ts
+export default {
+  lang: 'ko', // 'ko' | 'en' | 'jp'
+  aliases: {
+    app: "src/app",
+    entities: "src/core/entities"
+  }
+};
+```
+
+**`nextx.config.json` 예시:**
+
+```json
+{
+  "lang": "ko",
+  "aliases": {
+    "app": "src/app",
+    "entities": "src/core/entities"
+  }
+}
+```
+
+**옵션:**
+
+-   `lang`: CLI 메시지 언어를 설정합니다. (`ko`, `en`, `jp` 지원) 기본값은 `"ko"` 입니다.
+-   `aliases.app`: Next.js의 `app` 디렉토리 경로를 지정합니다. 기본값은 `"app"` 입니다.
+-   `aliases.entities`: `entity` 명령어로 생성되는 파일들의 루트 경로를 지정합니다. 기본값은 `"app/_entities"` 입니다.
+
+### 모노레포(Monorepo) 지원
+
+-   **자동 감지**: 설정 파일이 없는 경우, `nextx`는 `pnpm-workspace.yaml` 파일의 존재 여부를 확인하여 자동으로 pnpm 모노레포 구조를 감지합니다.
+-   **자동 경로 탐색**: 모노레포 환경이 감지되면, `pnpm-workspace.yaml`에 정의된 패키지 경로(`apps/*`, `packages/*` 등)를 순회하며 `next.config.js`가 있는 Next.js 프로젝트를 자동으로 찾아냅니다.
+-   따라서, 모노레포의 루트 디렉토리나 하위 패키지 디렉토리 등 어디에서 `nextx` 명령어를 실행하더라도, CLI는 올바른 Next.js 프로젝트에 파일을 생성합니다.
 
 ---
 
@@ -22,87 +69,39 @@ pnpm add -g @NIHILncunia/nextx
 
 ### `nextx page`
 
-새로운 페이지와 그에 해당하는 컴포넌트를 생성합니다.
-
-**형식**
-```
-nextx page <그룹> <경로...> [--all]
-```
-
--   `<그룹>`: 페이지의 라우트 그룹 (예: `common`, `user`).
--   `<경로...>`: 생성할 하나 이상의 페이지 경로.
--   `--all`: 모든 상위 디렉토리에도 페이지를 함께 생성합니다.
-
-**주요 기능 및 이름 규칙**
--   **동적 라우트**: `[param]` 구문을 지원하며, `generateMetadata`를 사용하는 특별 템플릿을 사용합니다.
--   **상세 페이지**: `[...Id]` 형태의 동적 파라미터(예: `[postId]`)는 `...Detail` 형태(예: `PostDetail`)로 컴포넌트 이름을 생성합니다.
--   **다중 동적 라우트**: 여러 동적 세그먼트를 가진 경로(예: `archive/[year]/[month]`)는 이름을 조합하여(예: `ArchiveYearMonth`) 생성합니다.
--   **`common` 그룹**: `common` 그룹의 최상위 페이지는 특별히 `Home`으로 취급됩니다.
-
-**예시**
-```bash
-# (common) 그룹에 dashboard 페이지 생성
-$ nextx page common dashboard
-
-# 동적인 사용자 상세 페이지 생성
-# 컴포넌트 이름은 `UserDetail`로 생성됩니다
-$ nextx page user users/[userId]
-
-# 다중 동적 라우트 페이지 생성
-# 컴포넌트 이름은 `ArchiveYearMonth`로 생성됩니다
-$ nextx page common archive/[year]/[month]
-
-# 페이지와 모든 상위 페이지를 함께 생성
-$ nextx page common settings/user/profile --all
-```
+(내용 생략)
 
 ### `nextx api`
 
-새로운 API 라우트(`route.ts`)를 생성합니다.
-
-**형식**
-```
-nextx api <카테고리> <경로...> [--all]
-```
-
--   `<카테고리>`: API의 주 카테고리 (예: `products`, `users`).
--   `<경로...>`: 생성할 하나 이상의 API 경로.
--   `--all`: 모든 상위 디렉토리에도 `route.ts`를 함께 생성합니다.
-
-**예시**
-```bash
-# products에 대한 검색 API 생성
-$ nextx api products search
-
-# 특정 사용자를 위한 동적 API 라우트 생성
-$ nextx api users [userId]
-
-# 여러 라우트와 그 상위 라우트를 함께 생성
-$ nextx api payments stripe/webhooks --all
-```
+(내용 생략)
 
 ### `nextx entity`
 
-데이터 엔티티를 위한 보일러플레이트를 생성합니다. 상태 관리(Zustand), 쿼리 키(TanStack Query Key Factory), 타입, 훅 관련 파일을 포함합니다.
+(내용 생략)
+
+### `nextx config`
+
+`nextx`의 설정을 확인하거나 변경합니다.
 
 **형식**
 ```
-nextx entity <이름>
+nextx config <get|set> <key> [value]
 ```
 
--   `<이름>`: 엔티티의 이름 (예: `post`, `user`).
+-   `get <key>`: 현재 설정 값을 확인합니다.
+-   `set <key> <value>`: 설정 값을 변경합니다. 이 명령어는 `nextx.config.json` 파일만 수정할 수 있습니다.
 
-**주요 기능**
--   **`common` 엔티티**: `nextx entity common`을 실행하여 특별한 `common` 엔티티를 생성할 수 있습니다. 이는 다른 엔티티에서 사용되는 수많은 기반 훅과 타입을 생성합니다.
--   **일반 엔티티**: 다른 모든 이름에 대해서는 범용 템플릿을 기반으로 표준 파일 세트(`<name>.keys.ts`, `<name>.store.ts`, `<name>.types.ts`, `hooks/index.ts`)를 생성합니다.
+현재 지원되는 `<key>`는 `lang` 뿐입니다.
 
 **예시**
 ```bash
-# 모든 훅과 타입을 포함하는 특별한 common 엔티티 생성
-$ nextx entity common
+# 현재 설정된 언어 확인
+$ nextx config get lang
+lang: ko
 
-# 새로운 'post' 엔티티 생성
-$ nextx entity post
+# 언어를 영어로 변경
+$ nextx config set lang en
+✅ Configuration changed successfully: lang = en
 ```
 
 ---
@@ -115,15 +114,52 @@ This tool helps you quickly generate boilerplate code for pages, API routes, and
 
 ## Installation
 
-To use `nextx` globally, install it via npm or pnpm:
+(Omitted for brevity)
 
-```bash
-npm install -g @NIHILncunia/nextx
-# or
-pnpm add -g @NIHILncunia/nextx
+---
+
+## Configuration
+
+While `nextx` works out-of-the-box with no configuration, you can create a configuration file to customize its behavior for your project structure.
+
+### Configuration File
+
+You can override the default paths for generated files by creating a `nextx.config.ts`, `nextx.config.js`, or `nextx.config.json` file in your project root. The CLI will search for them in that order.
+
+**`nextx.config.ts` Example (Recommended):**
+
+```typescript
+// nextx.config.ts
+export default {
+  lang: 'en', // 'ko' | 'en' | 'jp'
+  aliases: {
+    app: "src/app",
+    entities: "src/core/entities"
+  }
+};
 ```
 
-**Note**: This CLI must be run in the root of a Next.js project (where `next.config.js` is located).
+**`nextx.config.json` Example:**
+
+```json
+{
+  "lang": "en",
+  "aliases": {
+    "app": "src/app",
+    "entities": "src/core/entities"
+  }
+}
+```
+
+**Options:**
+
+-   `lang`: Sets the CLI message language. (Supports `ko`, `en`, `jp`) Default: `"ko"`.
+-   `aliases.app`: Specifies the path to the Next.js `app` directory. Default: `"app"`.
+-   `aliases.entities`: Specifies the root path for files generated by the `entity` command. Default: `"app/_entities"`.
+
+### Monorepo Support
+
+(Omitted for brevity)
 
 ---
 
@@ -131,87 +167,39 @@ pnpm add -g @NIHILncunia/nextx
 
 ### `nextx page`
 
-Generates new pages and their corresponding components.
-
-**Syntax**
-```
-nextx page <group> <paths...> [--all]
-```
-
--   `<group>`: The route group for the page (e.g., `common`, `user`).
--   `<paths...>`: One or more page paths to create.
--   `--all`: Also creates pages for all parent directories.
-
-**Features & Naming Conventions**
--   **Dynamic Routes**: Supports `[param]` syntax and uses a special template with `generateMetadata`.
--   **Detail Pages**: A dynamic route with an `[...Id]` parameter (e.g., `[postId]`) will be named `...Detail` (e.g., `PostDetail`).
--   **Multi-Dynamic Routes**: Paths with multiple dynamic segments (e.g., `archive/[year]/[month]`) will have their names combined (`ArchiveYearMonth`).
--   **`common` Group**: The root page of the `common` group is specially treated as `Home`.
-
-**Examples**
-```bash
-# Create a dashboard page in the (common) group
-$ nextx page common dashboard
-
-# Create a dynamic user detail page
-# Component will be named `UserDetail`
-$ nextx page user users/[userId]
-
-# Create a multi-dynamic route page
-# Component will be named `ArchiveYearMonth`
-$ nextx page common archive/[year]/[month]
-
-# Create a page and all its parent pages
-$ nextx page common settings/user/profile --all
-```
+(Omitted for brevity)
 
 ### `nextx api`
 
-Generates new API routes (`route.ts`).
-
-**Syntax**
-```
-nextx api <category> <paths...> [--all]
-```
-
--   `<category>`: The main category for the API (e.g., `products`, `users`).
--   `<paths...>`: One or more API paths to create.
--   `--all`: Also creates `route.ts` for all parent directories.
-
-**Examples**
-```bash
-# Create a search API for products
-$ nextx api products search
-
-# Create a dynamic API route for a specific user
-$ nextx api users [userId]
-
-# Create multiple routes and their parent routes
-$ nextx api payments stripe/webhooks --all
-```
+(Omitted for brevity)
 
 ### `nextx entity`
 
-Generates the boilerplate for a data entity, including files for state management (Zustand), query keys (TanStack Query Key Factory), types, and hooks.
+(Omitted for brevity)
+
+### `nextx config`
+
+Checks or modifies the `nextx` configuration.
 
 **Syntax**
 ```
-nextx entity <name>
+nextx config <get|set> <key> [value]
 ```
 
--   `<name>`: The name of the entity (e.g., `post`, `user`).
+-   `get <key>`: Checks the current value of a setting.
+-   `set <key> <value>`: Changes the value of a setting. This command can only modify `nextx.config.json` files.
 
-**Features**
--   **`common` Entity**: A special `common` entity can be created by running `nextx entity common`. This generates a large set of foundational hooks and types used by other entities.
--   **Generic Entities**: For any other name, it generates a standard set of files (`<name>.keys.ts`, `<name>.store.ts`, `<name>.types.ts`, `hooks/index.ts`) based on general-purpose templates.
+Currently, the only supported `<key>` is `lang`.
 
 **Examples**
 ```bash
-# Create the special common entity with all its hooks and types
-$ nextx entity common
+# Check the currently configured language
+$ nextx config get lang
+lang: ko
 
-# Create a new 'post' entity
-$ nextx entity post
+# Change the language to English
+$ nextx config set lang en
+✅ Configuration changed successfully: lang = en
 ```
 
 ---

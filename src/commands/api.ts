@@ -2,13 +2,16 @@ import { Command } from 'commander';
 import path from 'path';
 import fs from 'fs-extra';
 import ejs from 'ejs';
+import { fileURLToPath } from 'url';
+import { generateIntermediatePaths, NextxConfig } from '../utils.js';
 
-import { generateIntermediatePaths } from '../utils.js';
+// ESM에서 __dirname을 사용하기 위한 설정
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Helper function to create the route.ts file
-async function createApiRouteFile(category: string, apiPath: string) {
-  const outputDir = path.resolve(process.cwd(), 'app', 'api', category, apiPath);
-  const templateDir = path.resolve(process.cwd(), 'template');
+async function createApiRouteFile(category: string, apiPath: string, config: NextxConfig, projectRoot: string, messages: any) {
+  const templateDir = path.resolve(__dirname, '..', '..', 'template');
+  const outputDir = path.resolve(projectRoot, config.aliases.app, 'api', category, apiPath);
 
   const isDynamic = apiPath.includes('[');
   const templateData: any = {};
@@ -16,7 +19,7 @@ async function createApiRouteFile(category: string, apiPath: string) {
 
   if (isDynamic) {
     templatePath = path.join(templateDir, 'api-dynamic.ejs');
-    const match = apiPath.match(/\[(.*?)\]/);
+    const match = apiPath.match(/.*[[]([^]]*[])].*/);
     templateData.dynamicParam = match ? match[1] : 'id';
   } else {
     templatePath = path.join(templateDir, 'route.ejs');
@@ -26,42 +29,53 @@ async function createApiRouteFile(category: string, apiPath: string) {
   const finalContent = ejs.render(templateContent, templateData);
   const outputPath = path.join(outputDir, 'route.ts');
   await fs.outputFile(outputPath, finalContent);
-  console.log(`${path.basename(outputPath)} 생성 완료. (${path.relative(process.cwd(), outputPath)})`);
+  console.log(messages.api.createFile(path.basename(outputPath), path.relative(projectRoot, outputPath)));
 }
 
-export const apiCommand = new Command()
-  .name('api')
-  .description('새 API 라우트를 생성하고 route.ts 파일을 채웁니다')
-  .argument('<category>', 'API 카테고리 (예: \'users\')')
-  .argument('<paths...>', '하나 이상의 API 경로 (예: \'search\')')
-  .option('-a, --all', '모든 상위 경로에 API 라우트를 함께 생성합니다')
-  .action(async (category, paths, options) => {
-    console.log(`\n🚀 새 API 라우트 생성을 시작합니다...`);
-    console.log(`  - 카테고리: ${category}`);
-    console.log(`  - 경로: ${paths.join(', ')}`);
+export function apiCommand(projectRoot: string, config: NextxConfig, messages: any): Command {
+  const command = new Command('api');
 
-    try {
-      const createdPaths = new Set(paths);
-
-      for (const apiPath of paths) {
-        await createApiRouteFile(category, apiPath);
+  command
+    .description('새 API 라우트를 생성하고 route.ts 파일을 채웁니다')
+    .argument('<category>', 'API 카테고리 (예: \'users\')')
+    .argument('[paths...]', '하나 이상의 API 경로 (생략 시 카테고리 루트에 생성)')
+    .option('-a, --all', '모든 상위 경로에 API 라우트를 함께 생성합니다')
+    .action(async (category, paths, options) => {
+      if (paths.length === 0) {
+        paths.push('');
       }
 
-      if (options.all) {
-        console.log('\nℹ️ --all 옵션 감지. 모든 상위 경로에 API 라우트를 생성합니다.');
-        const intermediatePaths = generateIntermediatePaths(paths);
+      console.log(messages.api.start);
+      console.log(messages.common.projectPath(projectRoot));
+      console.log(messages.api.category(category));
+      console.log(messages.api.path(paths.map((p: string) => p === '' ? '/' : p).join(', ')));
+      console.log(messages.api.appDir(config.aliases.app));
 
-        for (const intermediatePath of intermediatePaths) {
-          if (!createdPaths.has(intermediatePath)) {
-            await createApiRouteFile(category, intermediatePath);
-            createdPaths.add(intermediatePath); // Avoid re-creating
+      try {
+        const createdPaths = new Set(paths);
+
+        for (const apiPath of paths) {
+          await createApiRouteFile(category, apiPath, config, projectRoot, messages);
+        }
+
+        if (options.all) {
+          console.log(messages.common.allOptionDetected);
+          const intermediatePaths = generateIntermediatePaths(paths);
+
+          for (const intermediatePath of intermediatePaths) {
+            if (!createdPaths.has(intermediatePath)) {
+              await createApiRouteFile(category, intermediatePath, config, projectRoot, messages);
+              createdPaths.add(intermediatePath);
+            }
           }
         }
+
+        console.log(messages.common.success);
+
+      } catch (error) {
+        console.error(messages.common.error, error);
       }
+    });
 
-      console.log('\n🎉 모든 작업이 성공적으로 완료되었습니다!');
-
-    } catch (error) {
-      console.error('\n❌ 오류가 발생했습니다:', error);
-    }
-  });
+  return command;
+}
