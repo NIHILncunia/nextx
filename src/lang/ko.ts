@@ -16,6 +16,9 @@ export const ko = {
     group: (group: string) => `  - 그룹: ${group}`,
     path: (path: string) => `  - 경로: ${path}`,
     appDir: (path: string) => `  - 앱 디렉토리: ${path}`,
+    srcDirectory: (enabled: boolean) => `  - src 디렉토리 사용: ${enabled ? '예' : '아니오'}`,
+    componentLocation: (location: string) => `  - 컴포넌트 위치: ${location}`,
+    componentCategory: (enabled: boolean) => `  - 컴포넌트 분류: ${enabled ? '예' : '아니오'}`,
     skipRoot: (group: string) => `
 ℹ️  '${group}' 그룹 최상위에는 페이지를 생성하지 않으므로 건너뜁니다.`,
     createFile: (fileName: string, path: string) => `✅ ${fileName} 생성 완료. (${path})`,

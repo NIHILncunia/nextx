@@ -1,5 +1,23 @@
 # nextx CLI 추가 기능 제안
 
+## 페이지 생성 로직 및 경로 설정 고도화 (최우선 사항)
+
+`page` 명령어의 동작을 사용자가 자신의 프로젝트 구조에 맞게 세밀하게 제어할 수 있도록 설정 옵션을 추가합니다.
+
+-   **`src` 디렉토리 사용 여부 설정 (`useSrc`):**
+    `nextx.config.ts`에 `useSrc: <boolean>` 옵션을 추가하여, `app`, `components` 등의 주요 폴더를 `src` 디렉토리 내에 생성할지(기본값), 또는 프로젝트 루트에 생성할지를 결정할 수 있습니다.
+
+-   **컴포넌트 생성 위치 제어 (`componentInRoute`):**
+    `componentInRoute: <boolean>` 옵션을 통해 페이지와 함께 생성되는 컴포넌트의 위치를 제어합니다.
+    -   `true` (기본값): 현재처럼 페이지 라우트 폴더 내의 `_components` 폴더에 생성합니다.
+    -   `false`: 아래 `aliases.components`로 지정된 공용 폴더에 컴포넌트를 생성합니다.
+
+-   **공용 컴포넌트 자동 분류 (`componentCategory`):**
+    `componentInRoute`가 `false`일 때, `componentCategory: <boolean>` 옵션을 활성화할 수 있습니다.
+    -   `true`: 공용 컴포넌트 폴더 내에 페이지의 라우트 그룹명과 동일한 하위 폴더를 자동으로 생성하고 그 안에 컴포넌트를 위치시켜, 파일들이 논리적으로 정리되도록 합니다. (예: `src/components/users/UserProfile.tsx`)
+
+---
+
 ## 1. 생성(Scaffolding) 기능 확장
 
 -   **독립적인 컴포넌트 생성 (`nextx component`):**

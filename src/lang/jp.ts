@@ -16,6 +16,9 @@ export const jp = {
     group: (group: string) => `  - グループ: ${group}`,
     path: (path: string) => `  - パス: ${path}`,
     appDir: (path: string) => `  - Appディレクトリ: ${path}`,
+    srcDirectory: (enabled: boolean) => `  - srcディレクトリ使用: ${enabled ? 'はい' : 'いいえ'}`,
+    componentLocation: (location: string) => `  - コンポーネント位置: ${location}`,
+    componentCategory: (enabled: boolean) => `  - コンポーネント分類: ${enabled ? 'はい' : 'いいえ'}`,
     skipRoot: (group: string) => `
 ℹ️  '${group}' グループのルートにはページを作成しないため、スキップします。`,
     createFile: (fileName: string, path: string) => `✅ ${fileName} の作成が完了しました。(${path})`,

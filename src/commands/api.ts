@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import ejs from 'ejs';
 import { fileURLToPath } from 'url';
-import { generateIntermediatePaths, NextxConfig } from '../utils.js';
+import { generateIntermediatePaths, NextxConfig, getAppPath } from '../utils.js';
 
 // ESM에서 __dirname을 사용하기 위한 설정
 const __filename = fileURLToPath(import.meta.url);
@@ -11,7 +11,8 @@ const __dirname = path.dirname(__filename);
 
 async function createApiRouteFile(category: string, apiPath: string, config: NextxConfig, projectRoot: string, messages: any) {
   const templateDir = path.resolve(__dirname, '..', '..', 'template');
-  const outputDir = path.resolve(projectRoot, config.aliases.app, 'api', category, apiPath);
+  const appPath = getAppPath(config);
+  const outputDir = path.resolve(projectRoot, appPath, 'api', category, apiPath);
 
   const isDynamic = apiPath.includes('[');
   const templateData: any = {};
@@ -49,7 +50,7 @@ export function apiCommand(projectRoot: string, config: NextxConfig, messages: a
       console.log(messages.common.projectPath(projectRoot));
       console.log(messages.api.category(category));
       console.log(messages.api.path(paths.map((p: string) => p === '' ? '/' : p).join(', ')));
-      console.log(messages.api.appDir(config.aliases.app));
+      console.log(messages.api.appDir(getAppPath(config)));
 
       try {
         const createdPaths = new Set(paths);

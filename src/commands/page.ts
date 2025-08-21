@@ -4,7 +4,16 @@ import fs from 'fs-extra';
 import ejs from 'ejs';
 import { fileURLToPath } from 'url';
 import readline from 'readline';
-import { kebabToPascalCase, NextxConfig } from '../utils.js';
+import { 
+  kebabToPascalCase, 
+  NextxConfig, 
+  getAppPath, 
+  determineComponentPath, 
+  getComponentImportPath,
+  shouldComponentInRoute,
+  shouldUseSrc,
+  shouldComponentCategory
+} from '../utils.js';
 
 // ESM에서 __dirname을 사용하기 위한 설정
 const __filename = fileURLToPath(import.meta.url);
@@ -58,14 +67,22 @@ async function createPageFiles(group: string, routePath: string, config: NextxCo
 
   const componentFileName = pascalCaseName;
   const templateDir = path.resolve(__dirname, '..', '..', 'template');
-  const outputDir = path.resolve(projectRoot, config.aliases.app, `(${group})`, routePath);
-
-  const componentOutputPath = path.join(outputDir, '_components', `${componentFileName}.tsx`);
+  
+  // 새로운 경로 결정 로직
+  const appPath = getAppPath(config);
+  const outputDir = path.resolve(projectRoot, appPath, `(${group})`, routePath);
+  
+  // 컴포넌트 경로 결정
+  const componentOutputPath = determineComponentPath(config, group, routePath, componentFileName);
+  const fullComponentPath = path.resolve(projectRoot, componentOutputPath);
   const pageOutputPath = path.join(outputDir, 'page.tsx');
+
+  // 컴포넌트 import 경로 결정
+  const componentImportPath = getComponentImportPath(config, group, routePath, componentFileName);
 
   const filesToCreate = [
     {
-      path: componentOutputPath,
+      path: fullComponentPath,
       template: 'component.ejs',
       data: { pascalCaseName },
       name: `${componentFileName}.tsx`
@@ -77,6 +94,7 @@ async function createPageFiles(group: string, routePath: string, config: NextxCo
         pascalCaseName,
         group,
         routePath,
+        componentImportPath,
         dynamicParam: isDynamic ? (routePath.match(/.*[[](.*?)]/)?.[1] ?? 'id') : undefined
       },
       name: 'page.tsx'
@@ -118,9 +136,14 @@ export function pageCommand(projectRoot: string, config: NextxConfig, messages: 
       console.log(messages.page.start);
       console.log('');
       console.log(messages.common.projectPath(projectRoot));
-      console.log(messages.page.appDir(config.aliases.app));
+      console.log(messages.page.appDir(getAppPath(config)));
       console.log(messages.page.group(group));
       console.log(messages.page.path(paths.join(', ')));
+      console.log(messages.page.srcDirectory(shouldUseSrc(config)));
+      console.log(messages.page.componentLocation(shouldComponentInRoute(config) ? '라우트 내부' : '공용 폴더'));
+      if (!shouldComponentInRoute(config)) {
+        console.log(messages.page.componentCategory(shouldComponentCategory(config)));
+      }
       console.log('');
 
       try {

@@ -89,7 +89,11 @@ export interface NextxConfig {
   aliases: {
     app: string;
     entities: string;
+    components?: string;
   };
+  useSrc?: boolean;
+  componentInRoute?: boolean;
+  componentCategory?: boolean;
 }
 
 const defaultConfig: NextxConfig = {
@@ -97,7 +101,11 @@ const defaultConfig: NextxConfig = {
   aliases: {
     app: 'app',
     entities: 'app/_entities',
+    components: 'components',
   },
+  useSrc: false,
+  componentInRoute: true,
+  componentCategory: false,
 };
 
 export async function loadConfig(cwd?: string): Promise<NextxConfig> {
@@ -143,5 +151,67 @@ export async function getMessages(lang: string = 'ko') {
 ⚠️  '${lang}' 언어 파일을 찾을 수 없어 한국어로 대체합니다.`);
     const { ko } = await import('./lang/ko.js');
     return ko;
+  }
+}
+
+// 새로운 유틸리티 함수들
+export function getAppPath(config: NextxConfig): string {
+  return config.useSrc ? `src/${config.aliases.app}` : config.aliases.app;
+}
+
+export function getComponentsPath(config: NextxConfig, group?: string): string {
+  const basePath = config.useSrc ? `src/${config.aliases.components || 'components'}` : (config.aliases.components || 'components');
+  
+  if (config.componentCategory && group) {
+    return path.join(basePath, group);
+  }
+  
+  return basePath;
+}
+
+export function shouldUseSrc(config: NextxConfig): boolean {
+  return config.useSrc ?? false;
+}
+
+export function shouldComponentInRoute(config: NextxConfig): boolean {
+  return config.componentInRoute ?? true;
+}
+
+export function shouldComponentCategory(config: NextxConfig): boolean {
+  return config.componentCategory ?? false;
+}
+
+export function determineComponentPath(
+  config: NextxConfig,
+  group: string,
+  routePath: string,
+  componentName: string
+): string {
+  if (shouldComponentInRoute(config)) {
+    // 컴포넌트를 라우트 내부에 생성
+    const appPath = getAppPath(config);
+    return path.join(appPath, `(${group})`, routePath, '_components', `${componentName}.tsx`);
+  } else {
+    // 컴포넌트를 공용 폴더에 생성
+    const componentsPath = getComponentsPath(config, group);
+    return path.join(componentsPath, `${componentName}.tsx`);
+  }
+}
+
+export function getComponentImportPath(
+  config: NextxConfig,
+  group: string,
+  routePath: string,
+  componentName: string
+): string {
+  if (shouldComponentInRoute(config)) {
+    // 라우트 내부 컴포넌트는 상대 경로로 import
+    return `./_components/${componentName}`;
+  } else {
+    // 공용 컴포넌트는 절대 경로로 import
+    // @가 app을 가리키므로, components 경로에서 app 부분을 제거
+    const componentsPath = getComponentsPath(config, group);
+    const relativePath = componentsPath.replace(`${config.aliases.app}/`, '');
+    return `@/${relativePath}/${componentName}`;
   }
 }

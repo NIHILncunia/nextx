@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import ejs from 'ejs';
 import { fileURLToPath } from 'url';
-import { kebabToPascalCase, NextxConfig } from '../utils.js';
+import { kebabToPascalCase, NextxConfig, getAppPath } from '../utils.js';
 import { glob } from 'glob';
 
 // ESM에서 __dirname을 사용하기 위한 설정
@@ -12,7 +12,8 @@ const __dirname = path.dirname(__filename);
 
 async function createCommonEntity(config: NextxConfig, projectRoot: string, messages: any) {
   const templateDir = path.resolve(__dirname, '..', '..', 'template', 'entity', 'common');
-  const outputDir = path.resolve(projectRoot, config.aliases.entities, 'common');
+  const appPath = getAppPath(config);
+  const outputDir = path.resolve(projectRoot, appPath, '_entities', 'common');
 
   const templateFiles = await glob('**/*.ejs', { cwd: templateDir });
 
@@ -35,7 +36,8 @@ async function createCommonEntity(config: NextxConfig, projectRoot: string, mess
 async function createGenericEntity(entityName: string, config: NextxConfig, projectRoot: string, messages: any) {
   const pascalCaseName = kebabToPascalCase(entityName);
   const templateDir = path.resolve(__dirname, '..', '..', 'template', 'entity');
-  const outputDir = path.resolve(projectRoot, config.aliases.entities, entityName);
+  const appPath = getAppPath(config);
+  const outputDir = path.resolve(projectRoot, appPath, '_entities', entityName);
 
   const typesPath = path.join(outputDir, `${entityName}.types.ts`);
   await fs.outputFile(typesPath, '');
@@ -67,7 +69,8 @@ export function entityCommand(projectRoot: string, config: NextxConfig, messages
     .action(async (name: string) => {
       console.log(messages.entity.start(name));
       console.log(messages.common.projectPath(projectRoot));
-      console.log(messages.entity.entityPath(config.aliases.entities));
+      const appPath = getAppPath(config);
+      console.log(messages.entity.entityPath(`${appPath}/_entities`));
 
       try {
         if (name.toLowerCase() === 'common') {

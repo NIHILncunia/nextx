@@ -1,13 +1,13 @@
 import React from 'react';
 
-import { <%- pascalCaseName %> } from '@/app/(<%- group %>)/<% if (routePath) { %><%- routePath %>/<% } %>_components/<%- pascalCaseName %>';
-import { setMeta } from '@/_libs';
+import { <%- pascalCaseName %> } from '<%- componentImportPath %>';
+    import { setMeta } from '@/_libs';
 
-export const metadata = setMeta({
-  title: '',
-  url: '/<%- routePath %>',
-});
+    export const metadata = setMeta({
+    title: '',
+    url: '/<%- routePath %>',
+      });
 
-export default function <%- pascalCaseName %>Page() {
-  return <<%- pascalCaseName %> />;
-}
+      export default function <%- pascalCaseName %>Page() {
+        return <<%- pascalCaseName %> />;
+          }
