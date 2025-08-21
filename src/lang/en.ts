@@ -18,6 +18,9 @@ export const en = {
     appDir: (path: string) => `  - App directory: ${path}`,
     skipRoot: (group: string) => `\nℹ️  Skipping page creation at the root of the '${group}' group.`,
     createFile: (fileName: string, path: string) => `✅ ${fileName} created successfully. (${path})`,
+    componentNameCountMismatch: (expected: number, actual: number) => `\n❌ The number of component names does not match the number of paths to be created. (Expected: ${expected}, Provided: ${actual})`,
+    overwritePrompt: (filePath: string) => `The file '${filePath}' already exists. Do you want to overwrite it? (y/N) `,
+    skipFile: (fileName: string) => `⏭️  Skipping file creation: ${fileName}`,
   },
   api: {
     start: '\n🚀 Starting to create a new API route...', 

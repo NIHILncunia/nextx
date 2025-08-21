@@ -16,8 +16,13 @@ export const ko = {
     group: (group: string) => `  - 그룹: ${group}`,
     path: (path: string) => `  - 경로: ${path}`,
     appDir: (path: string) => `  - 앱 디렉토리: ${path}`,
-    skipRoot: (group: string) => `\nℹ️  '${group}' 그룹 최상위에는 페이지를 생성하지 않으므로 건너뜁니다.`,
+    skipRoot: (group: string) => `
+ℹ️  '${group}' 그룹 최상위에는 페이지를 생성하지 않으므로 건너뜁니다.`,
     createFile: (fileName: string, path: string) => `✅ ${fileName} 생성 완료. (${path})`,
+    componentNameCountMismatch: (expected: number, actual: number) => `
+❌ 컴포넌트 이름의 수가 생성될 경로의 수와 일치하지 않습니다. (필요: ${expected}, 제공: ${actual})`,
+    overwritePrompt: (filePath: string) => `'${filePath}' 파일이 이미 존재합니다. 덮어쓰시겠습니까? (y/N) `,
+    skipFile: (fileName: string) => `⏭️  파일 생성을 건너뜁니다: ${fileName}`,
   },
   api: {
     start: '\n🚀 새 API 라우트 생성을 시작합니다...', 

@@ -16,8 +16,13 @@ export const jp = {
     group: (group: string) => `  - グループ: ${group}`,
     path: (path: string) => `  - パス: ${path}`,
     appDir: (path: string) => `  - Appディレクトリ: ${path}`,
-    skipRoot: (group: string) => `\nℹ️  '${group}' グループのルートにはページを作成しないため、スキップします。`,
+    skipRoot: (group: string) => `
+ℹ️  '${group}' グループのルートにはページを作成しないため、スキップします。`,
     createFile: (fileName: string, path: string) => `✅ ${fileName} の作成が完了しました。(${path})`,
+    componentNameCountMismatch: (expected: number, actual: number) => `
+❌ コンポーネント名の数が作成されるパスの数と一致しません。 (必要: ${expected}, 提供: ${actual})`,
+    overwritePrompt: (filePath: string) => `ファイル '${filePath}' は既に存在します。上書きしますか？ (y/N) `,
+    skipFile: (fileName: string) => `⏭️  ファイル作成をスキップします: ${fileName}`,
   },
   api: {
     start: '\n🚀 新しいAPIルートの作成を開始します...', 
