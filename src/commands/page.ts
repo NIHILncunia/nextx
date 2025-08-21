@@ -4,11 +4,11 @@ import fs from 'fs-extra';
 import ejs from 'ejs';
 import { fileURLToPath } from 'url';
 import readline from 'readline';
-import { 
-  kebabToPascalCase, 
-  NextxConfig, 
-  getAppPath, 
-  determineComponentPath, 
+import {
+  kebabToPascalCase,
+  NextxConfig,
+  getAppPath,
+  determineComponentPath,
   getComponentImportPath,
   shouldComponentInRoute,
   shouldUseSrc,
@@ -57,8 +57,8 @@ async function createPageFiles(group: string, routePath: string, config: NextxCo
     pascalCaseName = kebabToPascalCase(customComponentName);
   } else if (isGroupRoot && group === 'common') {
     pascalCaseName = 'Home';
-  } else if (isDynamic && dynamicParamCount === 1 && (dynamicMatches[0].toLowerCase().includes('id'))) {
-    const dynamicParam = dynamicMatches[0].replace(/[\\\[\\\\]]/g, '');
+  } else if (isDynamic && dynamicParamCount === 1 && (dynamicMatches[ 0 ].toLowerCase().includes('id'))) {
+    const dynamicParam = dynamicMatches[ 0 ].replace(/[\\\[\\\\]]/g, '');
     const entityName = dynamicParam.toLowerCase().replace('id', '');
     pascalCaseName = kebabToPascalCase(entityName) + 'Detail';
   } else {
@@ -67,11 +67,11 @@ async function createPageFiles(group: string, routePath: string, config: NextxCo
 
   const componentFileName = pascalCaseName;
   const templateDir = path.resolve(__dirname, '..', '..', 'template');
-  
+
   // 새로운 경로 결정 로직
   const appPath = getAppPath(config);
   const outputDir = path.resolve(projectRoot, appPath, `(${group})`, routePath);
-  
+
   // 컴포넌트 경로 결정
   const componentOutputPath = determineComponentPath(config, group, routePath, componentFileName);
   const fullComponentPath = path.resolve(projectRoot, componentOutputPath);
@@ -80,22 +80,39 @@ async function createPageFiles(group: string, routePath: string, config: NextxCo
   // 컴포넌트 import 경로 결정
   const componentImportPath = getComponentImportPath(config, group, routePath, componentFileName);
 
+  // 설정에 따른 템플릿 선택
+  const useSetMeta = config.useSetMeta ?? false;
+  const useCVA = config.components?.useCVA ?? true;
+  const libsPath = config.aliases.libs || 'app/_libs';
+
+  // 컴포넌트 템플릿 선택
+  const componentTemplate = useCVA ? 'component-cva.ejs' : 'component-standard.ejs';
+
+  // 페이지 템플릿 선택
+  const pageTemplate = isDynamic
+    ? (useSetMeta ? 'page-dynamic-setmeta.ejs' : 'page-dynamic-standard.ejs')
+    : (useSetMeta ? 'page-setmeta.ejs' : 'page-standard.ejs');
+
   const filesToCreate = [
     {
       path: fullComponentPath,
-      template: 'component.ejs',
-      data: { pascalCaseName },
+      template: componentTemplate,
+      data: {
+        pascalCaseName,
+        libsPath
+      },
       name: `${componentFileName}.tsx`
     },
     {
       path: pageOutputPath,
-      template: isDynamic ? 'page-dynamic.ejs' : 'page.ejs',
+      template: pageTemplate,
       data: {
         pascalCaseName,
         group,
         routePath,
         componentImportPath,
-        dynamicParam: isDynamic ? (routePath.match(/.*[[](.*?)]/)?.[1] ?? 'id') : undefined
+        libsPath,
+        dynamicParam: isDynamic ? (routePath.match(/.*[[](.*?)]/)?.[ 1 ] ?? 'id') : undefined
       },
       name: 'page.tsx'
     }
@@ -168,7 +185,7 @@ export function pageCommand(projectRoot: string, config: NextxConfig, messages: 
           pathsToCreate.add('');
         }
 
-        const sortedPaths = [...pathsToCreate].sort();
+        const sortedPaths = [ ...pathsToCreate ].sort();
 
         const componentNames = options.component as string[] | undefined;
 
@@ -180,7 +197,7 @@ export function pageCommand(projectRoot: string, config: NextxConfig, messages: 
         const componentNameMap = new Map<string, string>();
         if (componentNames) {
           sortedPaths.forEach((path, index) => {
-            const componentName = componentNames[index];
+            const componentName = componentNames[ index ];
             if (componentName) {
               componentNameMap.set(path, componentName);
             }
@@ -196,7 +213,8 @@ export function pageCommand(projectRoot: string, config: NextxConfig, messages: 
 
       } catch (error) {
         console.error(messages.common.error, error);
-      }    });
+      }
+    });
 
   return command;
 }

@@ -1,0 +1,15 @@
+'use client';
+
+import React from 'react';
+
+interface Props extends React.HTMLAttributes<HTMLDivElement> {
+  className?: string;
+}
+
+export function <%- pascalCaseName %>({ className, ...props }: Props) {
+  return (
+    <div className={className} {...props}>
+      content
+    </div>
+  );
+}

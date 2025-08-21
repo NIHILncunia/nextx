@@ -16,6 +16,21 @@ pnpm add -g @NIHILncunia/nextx
 
 **참고**: `nextx`는 현재 디렉토리, 상위 디렉토리, 또는 pnpm 모노레포 작업 공간 내에서 Next.js 프로젝트(`next.config.js`가 있는 위치)를 자동으로 찾습니다. 특정 경로를 지정하고 싶다면 설정 파일을 사용할 수 있습니다.
 
+### 프로젝트 초기화
+
+`nextx`를 사용하기 전에 먼저 프로젝트를 초기화해야 합니다:
+
+```bash
+nextx init
+```
+
+이 명령어는 다음 작업을 수행합니다:
+
+- `nextx.config.json` 설정 파일 생성
+- 필요한 유틸리티 함수들 (`cn`, `Api` 클래스 등) 생성
+- 공용 엔티티 파일들 생성
+- 필수 의존성 패키지들 자동 설치
+
 ---
 
 ## 설정 (Configuration)
@@ -32,13 +47,14 @@ pnpm add -g @NIHILncunia/nextx
 // nextx.config.ts
 export default {
   lang: "ko", // 'ko' | 'en' | 'jp'
-  useSrc: false, // src 디렉토리 사용 여부 (기본값: false)
-  componentInRoute: true, // 컴포넌트를 라우트 내부에 생성 (기본값: true)
-  componentCategory: false, // 공용 컴포넌트를 그룹별로 분류 (기본값: false)
+  useSrc: false, // src 디렉토리 사용 여부
+  componentInRoute: true, // 컴포넌트를 라우트 내부에 생성
+  componentCategory: false, // 공용 컴포넌트를 그룹별로 분류
   aliases: {
     app: "app",
     entities: "app/_entities",
     components: "components", // 공용 컴포넌트 경로
+    libs: "app/_libs",
   },
 };
 ```
@@ -54,20 +70,22 @@ export default {
   "aliases": {
     "app": "app",
     "entities": "app/_entities",
-    "components": "components"
+    "components": "app/_components",
+    "libs": "app/_libs"
   }
 }
 ```
 
 **옵션:**
 
-- `lang`: CLI 메시지 언어를 설정합니다. (`ko`, `en`, `jp` 지원) 기본값은 `"ko"` 입니다.
-- `useSrc`: `src` 디렉토리 사용 여부를 설정합니다. 기본값은 `false` 입니다.
-- `componentInRoute`: 컴포넌트를 라우트 내부에 생성할지 설정합니다. 기본값은 `true` 입니다.
-- `componentCategory`: 공용 컴포넌트를 그룹별로 분류할지 설정합니다. 기본값은 `false` 입니다.
-- `aliases.app`: Next.js의 `app` 디렉토리 경로를 지정합니다. 기본값은 `"app"` 입니다.
-- `aliases.entities`: `entity` 명령어로 생성되는 파일들의 루트 경로를 지정합니다. 기본값은 `"app/_entities"` 입니다.
-- `aliases.components`: 공용 컴포넌트 디렉토리 경로를 지정합니다. 기본값은 `"components"` 입니다.
+- `lang`: CLI 메시지 언어를 설정합니다. (`ko`, `en`, `jp` 지원) 기본값: `"ko"`.
+- `useSrc`: `src` 디렉토리 사용 여부를 설정합니다. 기본값: `false`.
+- `componentInRoute`: 컴포넌트를 라우트 경로 내(`_components`)에 생성할지 여부를 설정합니다. 기본값: `true`.
+- `componentCategory`: `componentInRoute`가 `false`일 경우, 공용 컴포넌트를 그룹별로 분류할지 설정합니다. 기본값: `false`.
+- `aliases.app`: Next.js의 `app` 디렉토리 경로를 지정합니다. 기본값: `"app"`.
+- `aliases.entities`: `entity` 명령어로 생성되는 파일들의 루트 경로를 지정합니다. 기본값: `"app/_entities"`.
+- `aliases.components`: 공용 컴포넌트 디렉토리 경로를 지정합니다. 기본값: `"app/_components"`.
+- `aliases.libs`: 라이브러리 파일들의 경로를 지정합니다. 기본값: `"app/_libs"`.
 
 ### 모노레포(Monorepo) 지원
 
@@ -78,6 +96,67 @@ export default {
 ---
 
 ## 사용법
+
+### `nextx init`
+
+프로젝트를 초기화하고 필요한 설정 파일과 유틸리티 함수들을 생성합니다.
+
+**형식**
+
+```bash
+nextx init [options]
+```
+
+- `[options]`:
+  - `-f, --force`: 기존 설정 파일을 덮어씁니다
+
+**예시**
+
+```bash
+# 프로젝트 초기화
+$ nextx init
+
+# 기존 설정 파일 덮어쓰기
+$ nextx init --force
+```
+
+**생성되는 파일들**
+
+```
+app/
+├── _libs/
+│   ├── cn.ts
+│   ├── tools/
+│   │   └── axios.tools.ts
+│   └── index.ts
+└── _entities/
+    └── common/
+        ├── common.types.ts
+        ├── common.keys.ts
+        ├── common.store.ts
+        ├── process.d.ts
+        ├── react-query.d.ts
+        └── hooks/
+            ├── index.ts
+            ├── use-done.ts
+            ├── use-loading.ts
+            └── api/
+                ├── use-get.ts
+                ├── use-post.ts
+                ├── use-patch.ts
+                ├── use-put.ts
+                └── use-delete.ts
+```
+
+**자동 설치되는 패키지들**
+
+- `@tanstack/react-query`
+- `@lukemorales/query-key-factory`
+- `axios`
+- `class-variance-authority`
+- `clsx`
+- `tailwind-merge`
+- `@tanstack/react-query-devtools` (devDependencies)
 
 ### `nextx page`
 
@@ -92,10 +171,10 @@ nextx page <group> <paths...> [options]
 - `<group>`: 페이지가 속할 라우트 그룹입니다. `app/(<group>)/...` 형태로 디렉토리가 생성됩니다.
 - `<paths...>`: 생성할 페이지의 경로입니다. 여러 경로를 동시에 지정할 수 있으며, `posts/[id]`와 같은 동적 라우트도 지원합니다.
 - `[options]`:
-  - `-a, --all`: 입력된 경로의 모든 중간 경로에 페이지를 함께 생성합니다 (그룹 루트 제외)
-  - `-r, --root`: 그룹의 최상위 경로에도 페이지를 생성합니다
-  - `-f, --force`: 파일이 이미 있어도 강제로 덮어씁니다
-  - `-c, --component <names...>`: 생성될 경로에 순서대로 적용할 컴포넌트 이름을 지정합니다
+  - `-a, --all`: 지정된 경로의 모든 상위 경로에 페이지를 함께 생성합니다.
+  - `-r, --root`: 그룹의 최상위 경로에도 페이지를 생성합니다.
+  - `-f, --force`: 파일이 이미 있어도 강제로 덮어씁니다.
+  - `-c, --component <names...>`: 생성될 경로에 순서대로 적용할 컴포넌트 이름을 지정합니다.
 
 **예시**
 
@@ -180,9 +259,9 @@ $ nextx page posts list
 'app/(posts)/list/page.tsx' 파일이 이미 존재합니다. 덮어쓰시겠습니까? (y/N)
 ```
 
-- `y`를 입력하면 파일이 덮어써집니다
-- `N` 또는 Enter를 누르면 파일 생성을 건너뜁니다
-- `--force` 옵션을 사용하면 확인 없이 강제로 덮어씁니다
+- `y`를 입력하면 파일이 덮어써집니다.
+- `N` 또는 Enter를 누르면 파일 생성을 건너뜁니다.
+- `--force` 옵션을 사용하면 확인 없이 강제로 덮어씁니다.
 
 **CLI 출력 형식**
 
@@ -255,10 +334,10 @@ nextx entity <name>
 $ nextx entity user-profile
 ```
 
-**결과** (`nextx.config.ts`의 `aliases.entities` 경로에 생성)
+**결과** (`nextx.config.json`의 `aliases.entities` 경로에 따라 생성됨)
 
 ```
-src/core/entities/
+app/_entities/
 └── user-profile/
     ├── hooks/
     │   └── index.ts
@@ -276,7 +355,7 @@ $ nextx entity common
 **결과**
 
 ```
-src/core/entities/
+app/_entities/
 └── common/
     ├── common.keys.ts
     ├── common.store.ts
@@ -319,7 +398,7 @@ lang: ko
 
 # 언어를 영어로 변경
 $ nextx config set lang en
-✅ Configuration changed successfully: lang = en
+✅ 설정이 성공적으로 변경되었습니다: lang = en
 ```
 
 ---

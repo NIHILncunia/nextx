@@ -16,6 +16,21 @@ pnpm add -g @NIHILncunia/nextx
 
 **注意**: `nextx`は、現在のディレクトリ、親ディレクトリ、または pnpm モノレポワークスペース内で Next.js プロジェクト（`next.config.js`がある場所）を自動的に見つけます。特定のパスを指定したい場合は、設定ファイルを使用できます。
 
+### プロジェクト初期化
+
+`nextx`を使用する前に、まずプロジェクトを初期化する必要があります：
+
+```bash
+nextx init
+```
+
+このコマンドは以下の作業を実行します：
+
+- `nextx.config.json`設定ファイルの作成
+- 必要なユーティリティ関数（`cn`、`Api`クラスなど）の生成
+- 共通エンティティファイルの作成
+- 必須依存関係パッケージの自動インストール
+
 ---
 
 ## 設定 (Configuration)
@@ -32,13 +47,14 @@ pnpm add -g @NIHILncunia/nextx
 // nextx.config.ts
 export default {
   lang: "jp", // 'ko' | 'en' | 'jp'
-  useSrc: false, // srcディレクトリ使用有無（デフォルト: false）
-  componentInRoute: true, // コンポーネントをルート内部に生成（デフォルト: true）
-  componentCategory: false, // 共有コンポーネントをグループ別に分類（デフォルト: false）
+  useSrc: false, // srcディレクトリ使用有無
+  componentInRoute: true, // コンポーネントをルート内部に生成
+  componentCategory: false, // 共有コンポーネントをグループ別に分類
   aliases: {
     app: "app",
     entities: "app/_entities",
     components: "components", // 共有コンポーネントパス
+    libs: "app/_libs",
   },
 };
 ```
@@ -54,20 +70,22 @@ export default {
   "aliases": {
     "app": "app",
     "entities": "app/_entities",
-    "components": "components"
+    "components": "app/_components",
+    "libs": "app/_libs"
   }
 }
 ```
 
 **オプション:**
 
-- `lang`: CLI メッセージ言語を設定します。（`ko`、`en`、`jp`対応）デフォルトは`"ko"`です。
-- `useSrc`: `src`ディレクトリ使用有無を設定します。デフォルトは`false`です。
-- `componentInRoute`: コンポーネントをルート内部に生成するか設定します。デフォルトは`true`です。
-- `componentCategory`: 共有コンポーネントをグループ別に分類するか設定します。デフォルトは`false`です。
-- `aliases.app`: Next.js の`app`ディレクトリパスを指定します。デフォルトは`"app"`です。
-- `aliases.entities`: `entity`コマンドで生成されるファイルのルートパスを指定します。デフォルトは`"app/_entities"`です。
-- `aliases.components`: 共有コンポーネントディレクトリパスを指定します。デフォルトは`"components"`です。
+- `lang`: CLI メッセージ言語を設定します。（`ko`、`en`、`jp`対応）デフォルト: `"ko"`。
+- `useSrc`: `src`ディレクトリ使用有無を設定します。デフォルト: `false`。
+- `componentInRoute`: コンポーネントをルートパス内（`_components`）に生成するかどうかを設定します。デフォルト: `true`。
+- `componentCategory`: `componentInRoute`が`false`の場合、共有コンポーネントをグループ別に分類するかどうかを設定します。デフォルト: `false`。
+- `aliases.app`: Next.js の`app`ディレクトリパスを指定します。デフォルト: `"app"`。
+- `aliases.entities`: `entity`コマンドで生成されるファイルのルートパスを指定します。デフォルト: `"app/_entities"`。
+- `aliases.components`: 共有コンポーネントディレクトリパスを指定します。デフォルト: `"app/_components"`。
+- `aliases.libs`: ライブラリファイルのパスを指定します。デフォルト: `"app/_libs"`。
 
 ### モノレポ(Monorepo) サポート
 
@@ -78,6 +96,67 @@ export default {
 ---
 
 ## 使用方法
+
+### `nextx init`
+
+プロジェクトを初期化し、必要な設定ファイルとユーティリティ関数を生成します。
+
+**形式**
+
+```bash
+nextx init [options]
+```
+
+- `[options]`:
+  - `-f, --force`: 既存の設定ファイルを上書きします
+
+**例**
+
+```bash
+# プロジェクト初期化
+$ nextx init
+
+# 既存の設定ファイル上書き
+$ nextx init --force
+```
+
+**生成されるファイル**
+
+```
+app/
+├── _libs/
+│   ├── cn.ts
+│   ├── tools/
+│   │   └── axios.tools.ts
+│   └── index.ts
+└── _entities/
+    └── common/
+        ├── common.types.ts
+        ├── common.keys.ts
+        ├── common.store.ts
+        ├── process.d.ts
+        ├── react-query.d.ts
+        └── hooks/
+            ├── index.ts
+            ├── use-done.ts
+            ├── use-loading.ts
+            └── api/
+                ├── use-get.ts
+                ├── use-post.ts
+                ├── use-patch.ts
+                ├── use-put.ts
+                └── use-delete.ts
+```
+
+**自動インストールされるパッケージ**
+
+- `@tanstack/react-query`
+- `@lukemorales/query-key-factory`
+- `axios`
+- `class-variance-authority`
+- `clsx`
+- `tailwind-merge`
+- `@tanstack/react-query-devtools` (devDependencies)
 
 ### `nextx page`
 
@@ -92,10 +171,10 @@ nextx page <group> <paths...> [options]
 - `<group>`: ページが属するルートグループです。`app/(<group>)/...`の形でディレクトリが作成されます。
 - `<paths...>`: 生成するページのパスです。複数のパスを同時に指定でき、`posts/[id]`のような動的ルートもサポートします。
 - `[options]`:
-  - `-a, --all`: 入力されたパスのすべての中間パスにページを一緒に生成します（グループルート除く）
-  - `-r, --root`: グループの最上位パスにもページを生成します
-  - `-f, --force`: ファイルが既に存在しても強制的に上書きします
-  - `-c, --component <names...>`: 生成されるパスに順番に適用するコンポーネント名を指定します
+  - `-a, --all`: 指定されたパスのすべての親パスにページを一緒に生成します。
+  - `-r, --root`: グループの最上位パスにもページを生成します。
+  - `-f, --force`: ファイルが既に存在しても強制的に上書きします。
+  - `-c, --component <names...>`: 生成されるパスに順番に適用するコンポーネント名を指定します。
 
 **例**
 
@@ -180,9 +259,9 @@ $ nextx page posts list
 'app/(posts)/list/page.tsx'ファイルは既に存在します。上書きしますか？ (y/N)
 ```
 
-- `y`を入力するとファイルが上書きされます
-- `N`または Enter を押すとファイル生成をスキップします
-- `--force`オプションを使用すると確認なしで強制的に上書きします
+- `y`を入力するとファイルが上書きされます。
+- `N`または Enter を押すとファイル生成をスキップします。
+- `--force`オプションを使用すると確認なしで強制的に上書きします。
 
 **CLI 出力形式**
 
@@ -255,10 +334,10 @@ nextx entity <name>
 $ nextx entity user-profile
 ```
 
-**結果**（`nextx.config.ts`の`aliases.entities`パスに生成）
+**結果**（`nextx.config.json`の`aliases.entities`パスに生成）
 
 ```
-src/core/entities/
+app/_entities/
 └── user-profile/
     ├── hooks/
     │   └── index.ts
@@ -276,7 +355,7 @@ $ nextx entity common
 **結果**
 
 ```
-src/core/entities/
+app/_entities/
 └── common/
     ├── common.keys.ts
     ├── common.store.ts

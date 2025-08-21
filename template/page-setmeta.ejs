@@ -1,0 +1,15 @@
+import React from 'react';
+
+import { <%- pascalCaseName %> } from '<%- componentImportPath %>';
+import { setMeta } from '@/<%- libsPath %>';
+
+export const metadata = setMeta({
+  title: '',
+  url: '/<%- routePath %>',
+});
+
+export default function <%- pascalCaseName %>Page() {
+  return (
+    <<%- pascalCaseName %> />
+  );
+}

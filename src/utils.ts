@@ -15,7 +15,7 @@ export function generateIntermediatePaths(paths: string[]): Set<string> {
     const pathSegments = p.split('/').filter((p): p is string => !!p);
     let currentPath = '';
     for (let i = 0; i < pathSegments.length - 1; i++) {
-      const segment = pathSegments[i];
+      const segment = pathSegments[ i ];
       if (segment) {
         currentPath = path.join(currentPath, segment);
         intermediatePaths.add(currentPath);
@@ -36,7 +36,7 @@ export function kebabToPascalCase(str: string): string {
 
 export async function findProjectRoot(): Promise<string | undefined> {
   // 1. Find next.config.js upwards from CWD
-  const nextConfigPath = await findUp(['next.config.js', 'next.config.mjs', 'next.config.ts']);
+  const nextConfigPath = await findUp([ 'next.config.js', 'next.config.mjs', 'next.config.ts' ]);
   if (nextConfigPath) {
     return path.dirname(nextConfigPath);
   }
@@ -73,7 +73,7 @@ export async function findProjectRoot(): Promise<string | undefined> {
     for (const pattern of searchPatterns) {
       const found = await glob(pattern);
       if (found.length > 0) {
-        return path.dirname(found[0]!); // Return first match
+        return path.dirname(found[ 0 ]!); // Return first match
       }
     }
   } catch (error) {
@@ -90,10 +90,29 @@ export interface NextxConfig {
     app: string;
     entities: string;
     components?: string;
+    libs?: string;
   };
   useSrc?: boolean;
   componentInRoute?: boolean;
   componentCategory?: boolean;
+  // 새로운 설정 구조 지원
+  components?: {
+    useCVA?: boolean;
+    cnFunctionPath?: string;
+  };
+  paths?: {
+    components?: string;
+    pages?: string;
+    api?: string;
+    entities?: string;
+    libs?: string;
+  };
+  templates?: {
+    useCustomTemplates?: boolean;
+    customTemplatePath?: string;
+  };
+  // setMeta 사용 여부
+  useSetMeta?: boolean;
 }
 
 const defaultConfig: NextxConfig = {
@@ -102,14 +121,33 @@ const defaultConfig: NextxConfig = {
     app: 'app',
     entities: 'app/_entities',
     components: 'components',
+    libs: 'app/_libs',
   },
   useSrc: false,
   componentInRoute: true,
   componentCategory: false,
+  // 새로운 설정 구조 기본값 (하위 호환성을 위해 유지)
+  components: {
+    useCVA: true,
+    cnFunctionPath: '@/_libs',
+  },
+  paths: {
+    components: 'components',
+    pages: 'app',
+    api: 'app/api',
+    entities: '_entities',
+    libs: '_libs',
+  },
+  templates: {
+    useCustomTemplates: false,
+    customTemplatePath: './nextx-templates',
+  },
+  // setMeta 사용 여부 (기본값 false)
+  useSetMeta: false,
 };
 
 export async function loadConfig(cwd?: string): Promise<NextxConfig> {
-  const configFiles = ['nextx.config.ts', 'nextx.config.js', 'nextx.config.json'];
+  const configFiles = [ 'nextx.config.ts', 'nextx.config.js', 'nextx.config.json' ];
   const configPath = await findUp(configFiles, { cwd });
 
   if (!configPath) {
@@ -139,13 +177,25 @@ export async function loadConfig(cwd?: string): Promise<NextxConfig> {
       ...defaultConfig.aliases,
       ...(userConfig.aliases || {}),
     },
+    components: {
+      ...defaultConfig.components,
+      ...(userConfig.components || {}),
+    },
+    paths: {
+      ...defaultConfig.paths,
+      ...(userConfig.paths || {}),
+    },
+    templates: {
+      ...defaultConfig.templates,
+      ...(userConfig.templates || {}),
+    },
   };
 }
 
 export async function getMessages(lang: string = 'ko') {
   try {
     const langModule = await import(`./lang/${lang}.js`);
-    return langModule[lang];
+    return langModule[ lang ];
   } catch (error) {
     console.warn(`
 ⚠️  '${lang}' 언어 파일을 찾을 수 없어 한국어로 대체합니다.`);
@@ -161,11 +211,11 @@ export function getAppPath(config: NextxConfig): string {
 
 export function getComponentsPath(config: NextxConfig, group?: string): string {
   const basePath = config.useSrc ? `src/${config.aliases.components || 'components'}` : (config.aliases.components || 'components');
-  
+
   if (config.componentCategory && group) {
     return path.join(basePath, group);
   }
-  
+
   return basePath;
 }
 
@@ -214,4 +264,46 @@ export function getComponentImportPath(
     const relativePath = componentsPath.replace(`${config.aliases.app}/`, '');
     return `@/${relativePath}/${componentName}`;
   }
+}
+
+// 새로운 설정 구조를 위한 유틸리티 함수들
+export function getPathWithSrc(config: NextxConfig, basePath: string): string {
+  return config.useSrc ? `src/${basePath}` : basePath;
+}
+
+export function getComponentsPathNew(config: NextxConfig): string {
+  const basePath = config.paths?.components || 'components';
+  return getPathWithSrc(config, basePath);
+}
+
+export function getPagesPath(config: NextxConfig): string {
+  const basePath = config.paths?.pages || 'app';
+  return getPathWithSrc(config, basePath);
+}
+
+export function getApiPath(config: NextxConfig): string {
+  const basePath = config.paths?.api || 'app/api';
+  return getPathWithSrc(config, basePath);
+}
+
+export function getEntitiesPath(config: NextxConfig): string {
+  const basePath = config.paths?.entities || '_entities';
+  return getPathWithSrc(config, basePath);
+}
+
+export function getLibsPath(config: NextxConfig): string {
+  const basePath = config.paths?.libs || '_libs';
+  return getPathWithSrc(config, basePath);
+}
+
+export function shouldUseCVA(config: NextxConfig): boolean {
+  return config.components?.useCVA ?? true;
+}
+
+export function getCnFunctionPath(config: NextxConfig): string {
+  return config.components?.cnFunctionPath || '@/_libs';
+}
+
+export function shouldUseSetMeta(config: NextxConfig): boolean {
+  return config.useSetMeta ?? false;
 }
